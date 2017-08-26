@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <input type="text" id="message">
+    <button id="send">メッセージ送る</button>
+    <hr />
+    <div>
+        <ul id="messages">
+        </ul>
+    </div>
+</body>
+<script>
+(function(document) {
+    const ws = new WebSocket("ws://localhost:8080/");
+    const sendButton = document.getElementById("send");
+    const messageDom = document.getElementById("message");
+    const messageList = document.getElementById("messages");
+    function addMessageDom(messages) {
+		while (messageList.firstChild) {
+			messageList.removeChild(messageList.firstChild);
+		}
+		messages.forEach((m) => {
+			const li = document.createElement("li");
+			li.innerText = m;
+			messageList.appendChild(li);
+		});
+    }
+
+    sendButton.addEventListener("click", (e) => {
+        ws.send(JSON.stringify({
+            "message": messageDom.value
+        }));
+    });
+    ws.onopen = (e) => {
+        console.log(e);
+    };
+
+    ws.onmessage = (e) => {
+        const response = JSON.parse(e.data);
+        addMessageDom(response.messages);
+    };
+
+    ws.onclose = (e) => {
+        console.log(e);
+    };
+
+    ws.onerror = (e) => {
+        console.log(e);
+    };
+})(document);
+</script>
+</html>
